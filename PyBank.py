@@ -4,30 +4,6 @@
 # import budget_data.csv
 # The dataset contains 2 columns, Date and Profit / Losses
 
-# In[1]:
-
-
-# create file paths across operating systems
-import os
-# module for reading CSV files
-import csv
-import pandas as pd
-
-
-# In[39]:
-
-
-# This is the hard way to import a csv
-'''csvpath = os.path.join("..","Module-3","budget_data.csv")
-with open (csvpath, newline = "") as csvfile:
-    csvreader = csv.reader(csvfile,delimiter=",")
-    for row in csvreader:
-        print(row)'''
-# I like to use pandas... It is so much cleaner and simpler #Savemysanity
-csvpath = pd.read_csv("budget_data.csv")
-print(csvpath.head(10))
-
-
 # Your task is to create a Python script that analyzes the records to calculate each of the following:
 # 
 # 
@@ -37,94 +13,83 @@ print(csvpath.head(10))
 # The greatest increase in profits (date and amount) over the entire period
 # The greatest decrease in losses (date and amount) over the entire period
 
-# In[40]:
+# In[7]:
 
 
-#Calculate Total Months of Data
-total_months = csvpath['Date'].count()
-print("FINANCIAL ANALYSIS")
-print("-----------------------------------")
-print("Total Months: " + str(total_months))
+# create file paths across operating systems
+import os
+# module for reading CSV files
+import csv
 
 
-# In[41]:
+# In[8]:
 
 
-#Calculate TotalProfits / Losses
-total_profit = csvpath['Profit/Losses'].sum()
-print("Total: $" + str(total_profit))
+# This is the hard way to import and work with a csv - difficult to follow
+budget_csv = os.path.join("..","Module-3","budget_data.csv")
+with open (budget_csv, newline = "") as csvfile:
+    csvreader = csv.reader(csvfile,delimiter=",")
+    #skip / extract header row
+    headers = next(csvreader)
+    #empty lists for columns
+    dates = []
+    revenue = []
+    #new column for difference in profits/losses
+    rev_change = []
+    # row by row
+    for row in csvreader:
+        #extract each date
+        dates.append(row[0])
+        #extract revenue for month
+        revenue.append(float(row[1]))
+        
+    print("Financial Analysis")
+    print("--------------------------")
+    print("Total Months: ", len(dates))
+    
+    #Total Revenue - Net Profits / Losses
+    total_revenue = sum(revenue)
+    print("Total Revenue: $",total_revenue)
+    
+    # Total Net Profit / Loss
+    for i in range(1,len(revenue)):
+        rev_change.append(revenue[i] - revenue[i-1])
+        ''' be careful  "i-1" goes to end of the list'''
+        avg_rev_change = sum(rev_change) / len(rev_change)
+        max_change = max(rev_change)
+        max_change_date = str(dates[rev_change.index(max(rev_change)) + 1])
+        min_change = min(rev_change)
+        min_change_date = str(dates[rev_change.index(min(rev_change)) + 1])
+    ''' had to shift dates by 1 month to adjust for 1 month not having a diff.'''
+    print("Average Revenue Change: $", round(avg_rev_change))
+    print("Greatest Increase in Profit: ", max_change_date, "($", max_change,")")
+    print("Greatest Decrease in Profit: ", min_change_date, "($", min_change,")")
+
+ 
 
 
-# In[42]:
-
-
-#Calculate Average Change
-average_change = csvpath['Profit/Losses'].diff().mean()
-print("Average Change: $" + str("%.2f" % average_change))
-
-
-# In[43]:
-
-
-#Calculate and Print the Greatest Increase in Profits
-#Create a new column for the difference 
-csvpath['dProfit/Losses'] = csvpath['Profit/Losses'].diff()
-'''print(csvpath.head(5))'''
-#Capture the date with the max difference in profits
-print(csvpath[['Date', 'dProfit/Losses']][csvpath['dProfit/Losses'] == csvpath['dProfit/Losses'].max()])
-
-
-# In[44]:
-
-
-#Calculate and Print the Greatest Decrease in Profits
-#Use the same difference column
-#Capture the date with the min difference in profits
-print(csvpath[['Date', 'dProfit/Losses']][csvpath['dProfit/Losses'] == csvpath['dProfit/Losses'].min()])
-
-
-# In[45]:
+# In[12]:
 
 
 #Create a text file
 pybanktxt = open("pybank.txt", "w")
 
 
-# In[46]:
-
-
-#Print One last Time to Terminal - All Together
-print("FINANCIAL ANALYSIS")
-print("-----------------------------------")
-print("Total Months: " + str(total_months))
-print("Total: $" + str(total_profit))
-print("Average Change: $" + str("%.2f" % average_change))
-print()
-print("Greatest Increase in Profits: ")
-print(csvpath[['Date', 'dProfit/Losses']][csvpath['dProfit/Losses'] == csvpath['dProfit/Losses'].max()])
-print()
-print("Greatest Decrease in Profits")
-print(csvpath[['Date', 'dProfit/Losses']][csvpath['dProfit/Losses'] == csvpath['dProfit/Losses'].min()])
-
-
-# In[47]:
+# In[13]:
 
 
 #Write to a text file
 pybanktxt.write("FINANCIAL ANALYSIS\n")
 pybanktxt.write("-----------------------------------\n")
-pybanktxt.write("Total Months: " + str(total_months) + "\n")
-pybanktxt.write("Total: $" + str(total_profit) + "\n")
-pybanktxt.write("Average Change: $" + str("%.2f" % average_change) + "\n")
+pybanktxt.write("Total Months: " + str(len(dates)) + "\n")
+pybanktxt.write("Total Revenue: $" + str(total_revenue) + "\n")
 pybanktxt.write("_________________________________\n")
-pybanktxt.write("Greatest Increase in Profits: \n")
-pybanktxt.write(str(csvpath[['Date', 'dProfit/Losses']][csvpath['dProfit/Losses'] == csvpath['dProfit/Losses'].max()]) + "\n")
-pybanktxt.write("_________________________________\n")
-pybanktxt.write("Greatest Decrease in Profits: \n")
-pybanktxt.write(str(csvpath[['Date', 'dProfit/Losses']][csvpath['dProfit/Losses'] == csvpath['dProfit/Losses'].min()]) + "\n")
+pybanktxt.write("Average Revenue Change: $" + str(round(avg_rev_change)) + "\n")
+pybanktxt.write("Greatest Increase in Profit: " +str(max_change_date) +  "  $" + str(max_change)+ "\n")
+pybanktxt.write("Greatest Decrease in Profit: " +str(min_change_date) +  "  $" + str(min_change)+ "\n")
 
 
-# In[48]:
+# In[14]:
 
 
 # close the text file
